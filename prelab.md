@@ -21,3 +21,9 @@ equals a constant change in pixels predetrmined at the beginning.
 ===========
 ___________
 ![code](code.png)
+
+
+
+
+
+Documentation: C2C Schriner helped me with this prelab
