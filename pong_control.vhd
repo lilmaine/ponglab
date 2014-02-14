@@ -53,6 +53,7 @@ architecture Behavioral of pong_control is
 	signal ballx_reg, bally_reg, ballx_next, bally_next, paddley_next, count_next : unsigned(10 downto 0);
 	signal count_reg: unsigned(10 downto 0):= "00000000000";	
 	signal paddley_reg: unsigned(10 downto 0) := to_unsigned(240, 11);
+	constant speed : integer := 1000;
 
 begin
 	-- state register
@@ -73,10 +74,10 @@ process(clk, reset)
 		end if;
 	end process;
 
-	--count register
-	count_next <= 	count_reg + to_unsigned(1,11) when count_reg < 1000 and v_completed = '1' else 
-						to_unsigned(0,11) when count_reg >= 1000 else
-						count_reg;
+	--count register						
+	count_next <= (others => '0') when count_reg = speed else
+					count_reg +1 when v_completed = '1' else
+					count_reg;
 	
 	process(clk, reset)
 	begin
@@ -90,10 +91,10 @@ process(clk, reset)
 
 		
 	--next-state logic
-		process(state_reg, up, down)
+		process(state_reg, up, down, count_reg)
 		begin
 			state_next <= state_reg;
-		
+			if(count_reg = speed) then
 			case state_reg is
 				when paddle_up =>					
 					if(up='0') then
@@ -113,24 +114,27 @@ process(clk, reset)
 					elsif(down='1') then
 						state_next <= paddle_down;
 					end if;
-			end case;		
+			end case;
+			end if;	
 	end process;	
 	
 	--look ahead output logic
 	process(paddley_next, paddley_reg, count_reg, state_next)
 	begin
 			paddley_next <= paddley_reg;
+			if(count_reg = speed) then
 				case state_next is
 					when stationary =>
 					when paddle_up =>
-						if (paddley_reg >40) then
+						if (paddley_reg >20) then
 							paddley_next <= paddley_reg - to_unsigned(1,11);
 						end if;	
 					when paddle_down =>
 						if (paddley_reg < 460) then
 							paddley_next <= paddley_reg + to_unsigned(1,11);
 						end if;
-				end case;	
+				end case;
+			end if;		
 	end process;
 	paddle_y <= paddley_next;
 
