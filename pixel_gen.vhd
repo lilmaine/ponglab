@@ -48,23 +48,26 @@ constant  paddle_height: unsigned(4 downto 0) := "11100";
 
 
 begin
-process(row, column, blank)
+process(row, column, blank, paddle_y)
 begin
---above of AF
-	if(blank = '0') then
-			if(row < 140) then
-				r <= (others => '0');
-				g <= (others => '0');
-				b <= (others => '0');
+
 -- Paddle
-			elsif(row >=paddle_y and column >=5 and column <= paddle_width and row <= paddle_y + to_integer(paddle_height)) then
+			if(row >=paddle_y and column >=5 and column <= paddle_width and row <= paddle_y + to_integer(paddle_height)) then
 					r <= (others => '0');
 					g <= "11111111";						
 					b <= (others => '0');
-			elsif(row >=220 and column >=40 and column <= 40 + to_integer(paddle_width) and row <= 220 + to_integer(ball_radius)) then
+--Ball					
+			elsif(row >= to_integer(ball_y) and column >= to_integer(ball_x) and column <= (to_integer(ball_x) + to_integer(ball_radius)) and row <= to_integer(ball_x) + to_integer(ball_radius)) then
 					g <= (others => '0');
 					r <= "11111111";						
-					b <= (others => '0');					
+					b <= (others => '0');
+
+--above of AF
+			elsif(blank = '0') then
+					if(row < 140) then
+						r <= (others => '0');
+						g <= (others => '0');
+						b <= (others => '0');					
 --AF Logo			
 			elsif(row >= 140) then
 				if (column >=200 and column <= 420 and row <=340) then
