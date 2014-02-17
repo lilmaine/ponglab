@@ -47,21 +47,23 @@ end pong_control;
 architecture Behavioral of pong_control is
 	type p_state_type is
 		(stationary, paddle_up, paddle_down);	
-	signal p_state_reg, p_state_next: p_state_type;
 	type b_state_type is
-		(new_game, game_over, moving, hit_paddle, hit_top_wall, hit_right_wall, hit_bottom_wall);	
+		(moving, hit_top_wall, hit_bottom_wall, hit_right_wall, hit_paddle, hit_left_wall);	
+	signal p_state_reg, p_state_next: p_state_type;
 	signal b_state_reg, b_state_next: b_state_type;	
 	signal  paddley_next, count_next : unsigned(10 downto 0);
 	signal count_reg: unsigned(10 downto 0):= "00000000000";	
 	signal paddley_reg: unsigned(10 downto 0) := to_unsigned(240, 11);
 	signal ballx_reg, ballx_next: unsigned(10 downto 0) := to_unsigned(20, 11);
-	signal bally_reg, bally_next: unsigned(10 downto 0) := to_unsigned(245, 11);
-	signal direction: unsigned(1 downto 0) := "11";
+	signal bally_reg, bally_next: unsigned(10 downto 0) := to_unsigned(210, 11);
 	
-	constant speed : integer := 1000;
+	shared variable x_direction, y_direction: STD_LOGIC := '1';
+	shared variable x_velocity, y_velocity : integer := 1;
+	
+	constant speed : integer := 600;
 	constant HEIGHT : integer := 480;
 	constant WIDTH : integer := 640;
-	constant dx, dy : integer := 1;
+	
 	constant ball_radius : integer := 8;
 	
 begin
@@ -148,129 +150,107 @@ process(clk, reset)
 -----------------------------------------------------------------------------------------------------	
 	
 	
---	-- ball state register
---	process(clk, reset)
---	begin
---		if (reset='1') then
---			b_state_reg <= new_game;
---		elsif rising_edge(clk) then
---			b_state_reg <= b_state_next;
---		end if;
---	end process;	
---	
---	-- ball output buffer
---	process(clk)
---	begin
---		if rising_edge(clk) then
---			ballx_reg <= ballx_next;
---			bally_reg <= bally_next;
---		end if;
---	end process;	
---	
---	--ball next-state logic
---		process(b_state_reg, ballx_reg, bally_reg, count_reg)
---		begin
---			b_state_next <= b_state_reg;
---			if(count_reg = speed) then
---				case b_state_reg is
---					when new_game =>					
---						b_state_next <= moving;
---					when moving =>
---						-- left wall or paddle hit
---						if(ballx_reg <= 13) then
---							if(bally_reg <= paddley_reg and bally_reg >= (paddley_reg + 28)) then
---								b_state_next <= hit_paddle;
---							else
---								b_state_next <= game_over;
---							end if;
---						end if;
---						-- right wall
---						if(ballx_reg + 8 >= WIDTH) then
---							b_state_next <= hit_right_wall;
---						end if;
---						-- bottom wall
---						if(bally_reg + 8 >= HEIGHT) then
---							b_state_next <= hit_bottom_wall;
---						end if;
---						-- top wall
---						if(bally_reg - 8 >= 0) then
---							b_state_next <= hit_top_wall;
---						end if;					
---					when hit_paddle =>
---						b_state_next <= moving;
---					when hit_top_wall =>
---						b_state_next <= moving;
---					when hit_bottom_wall =>
---						b_state_next <= moving;						
---					when hit_right_wall =>
---						b_state_next <= moving;	
---					when game_over =>					
---				end case;
---			end if;	
---	end process;	
---	
---	-- ball look ahead output logic
---	process(b_state_reg, ballx_next, bally_reg, ballx_reg, count_reg, direction)
---	begin
---			bally_next <= bally_reg;
---			ballx_next <= ballx_reg;
---			if(count_reg = speed) then
---				case b_state_next is
---					when new_game =>
---						ballx_next <= to_unsigned(20,11);
---						bally_next <= to_unsigned(240,11);
---					when moving =>
---						if(direction = "11") then
---							bally_next <= bally_reg - to_unsigned(dy,11);
---							ballx_next <= ballx_reg + to_unsigned(dx,11);
---						elsif(direction = "10") then
---							bally_next <= bally_reg + to_unsigned(dy,11);
---							ballx_next <= ballx_reg + to_unsigned(dx,11);
---						elsif(direction = "01") then
---							bally_next <= bally_reg - to_unsigned(dy,11);
---							ballx_next <= ballx_reg - to_unsigned(dx,11);	
---						elsif(direction = "00") then
---							bally_next <= bally_reg + to_unsigned(dy,11);
---							ballx_next <= ballx_reg - to_unsigned(dx,11);								
---						end if;	
---					when hit_paddle =>
---						if(direction = "01") then
---							direction <= "11";
---						else
---							direction <= "10";
---						end if;
---					when hit_bottom_wall =>
---						if(direction = "00") then
---							direction <= "01";
---						else
---							direction <= "11";
---						end if;
---					when hit_top_wall =>
---						if(direction = "11") then
---							direction <= "10";
---						else
---							direction <= "00";
---						end if;
---					when hit_right_wall =>
---						if(direction = "11") then
---							direction <= "01";
---						else
---							direction <= "00";
---						end if;
---					when game_over =>
---				end case;
---			end if;		
---	end process;	
-	
-	
-		
+	--state register for the ball
+	process(reset, clk)
+	begin			
+		if(reset='1') then
+			b_state_reg <= moving;
+		elsif(rising_edge(clk)) then
+			b_state_reg <= b_state_next;
+		end if;
+	end process;
+
+	--output buffer for ball
+	process(clk)
+	begin
+		if(rising_edge(clk)) then
+			bally_reg <= bally_next;
+			ballx_reg <= ballx_next;
+		end if;
+	end process;
+
+	--next state logic for ball
+	process(b_state_reg, ballx_reg, bally_reg)
+	begin
+	b_state_next <= b_state_reg;
+	if(count_reg = speed) then
+		case b_state_reg is
+			when moving =>
+
+				if (ballx_reg >= 625) then
+					b_state_next <= hit_right_wall;
+				elsif (ballx_reg <= 1) then
+					b_state_next <= hit_left_wall;
+				end if;
+
+				if	(bally_reg >= 479) then
+					b_state_next <= hit_bottom_wall;
+				elsif (bally_reg <= 1) then
+					b_state_next <= hit_top_wall;
+				end if;
+
+				if (ballx_reg <=20 and bally_reg >= paddley_reg and bally_reg <= paddley_reg+100) then
+					if (bally_reg >= (paddley_reg + 50)
+							 and bally_reg <= (paddley_reg + 100)) then
+						b_state_next <= hit_paddle;
+					elsif (bally_reg >= paddley_reg and bally_reg < (paddley_reg + 50)) then
+						b_state_next <= hit_paddle;
+					end if;
+				end if;
+			when hit_top_wall =>
+				b_state_next <= moving;
+			when hit_right_wall =>
+				b_state_next <= moving;
+			when hit_bottom_wall =>
+				b_state_next <= moving;
+			when hit_paddle =>
+				b_state_next <= moving;
+			when hit_left_wall =>
+			end case;
+	end if;
+	end process;
+
+	--look ahead output logic
+	process(b_state_next, bally_reg, ballx_reg, count_reg)
+	begin
+		bally_next <= bally_reg;
+		ballx_next <= ballx_reg;
+		if(count_reg = speed) then
+			case b_state_next is
+				when hit_left_wall =>
+				when moving =>
+					if(x_direction = '1' and y_direction = '0') then
+						bally_next <= bally_reg + to_unsigned(y_velocity, 11);
+						ballx_next <= ballx_reg + to_unsigned(x_velocity, 11);
+					elsif(x_direction = '0' and y_direction = '0') then
+						bally_next <= bally_reg + to_unsigned(y_velocity, 11);
+						ballx_next <= ballx_reg - to_unsigned(x_velocity, 11);
+					elsif(x_direction = '0' and y_direction = '1') then
+						bally_next <= bally_reg - to_unsigned(y_velocity, 11);
+						ballx_next <= ballx_reg - to_unsigned(x_velocity, 11);
+					elsif(x_direction = '1' and y_direction = '1') then
+						bally_next <= bally_reg - to_unsigned(y_velocity, 11);
+						ballx_next <= ballx_reg + to_unsigned(x_velocity, 11);
+					end if;
+				when hit_top_wall =>
+					y_direction := '0';
+					bally_next <= bally_reg + to_unsigned(y_velocity, 11);
+				when hit_right_wall =>
+					x_direction := '0';
+					ballx_next <= ballx_reg - to_unsigned(x_velocity, 11);
+				when hit_bottom_wall => 
+					y_direction := '1';
+					bally_next <= bally_reg - to_unsigned(y_velocity, 11);
+				when hit_paddle =>
+					x_direction := '1';
+					ballx_next <= ballx_reg + to_unsigned(x_velocity, 11);
+			end case;
+		end if;
+	end process;
+
 	--outputs
-	paddle_y <= paddley_next;
-	ball_x <= ballx_next;
-	ball_y <= bally_next;
-	
+	paddle_y <= paddley_reg;
+	ball_x <= ballx_reg;
+	ball_y <= bally_reg;
+
 end Behavioral;
-
-
-
-
