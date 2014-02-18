@@ -56,16 +56,16 @@ architecture Behavioral of pong_control is
 	signal paddley_reg: unsigned(10 downto 0) := to_unsigned(240, 11);
 	signal ballx_reg, ballx_next: unsigned(10 downto 0) := to_unsigned(20, 11);
 	signal bally_reg, bally_next: unsigned(10 downto 0) := to_unsigned(210, 11);
-	
+
 	shared variable x_direction, y_direction: STD_LOGIC := '1';
 	shared variable x_velocity, y_velocity : integer := 1;
-	
+
 	constant speed : integer := 600;
 	constant HEIGHT : integer := 480;
 	constant WIDTH : integer := 640;
-	
+
 	constant ball_radius : integer := 8;
-	
+
 begin
 	-- paddle state register
 process(clk, reset)
@@ -89,7 +89,7 @@ process(clk, reset)
 	count_next <= (others => '0') when count_reg = speed else
 					count_reg +1 when v_completed = '1' else
 					count_reg;
-	
+
 	process(clk, reset)
 	begin
 		if (reset ='1') then
@@ -100,7 +100,7 @@ process(clk, reset)
 	end process;	
 
 
-		
+
 	--paddle next-state logic
 		process(p_state_reg, up, down, count_reg)
 		begin
@@ -128,7 +128,7 @@ process(clk, reset)
 			end case;
 			end if;	
 	end process;	
-	
+
 	--look ahead output logic
 	process(paddley_next, paddley_reg, count_reg, p_state_next)
 	begin
@@ -148,8 +148,8 @@ process(clk, reset)
 			end if;		
 	end process;
 -----------------------------------------------------------------------------------------------------	
-	
-	
+
+
 	--state register for the ball
 	process(reset, clk)
 	begin			

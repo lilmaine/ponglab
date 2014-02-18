@@ -48,7 +48,7 @@ constant  paddle_height: unsigned(4 downto 0) := "11100";
 
 
 begin
-process(row, column, blank, paddle_y)
+process(row, column, blank, paddle_y, ball_x, ball_y)
 begin
 
 -- Paddle
@@ -57,10 +57,15 @@ begin
 					g <= "11111111";						
 					b <= (others => '0');
 --Ball					
-			elsif(row >= to_integer(ball_y) and column >= to_integer(ball_x) and column <= (to_integer(ball_x) + to_integer(ball_radius)) and row <= to_integer(ball_x) + to_integer(ball_radius)) then
+			elsif(row >= ball_y and column >=ball_x and column <= ball_x + ball_radius and row <= ball_y+ ball_radius) then
 					g <= (others => '0');
 					r <= "11111111";						
 					b <= (others => '0');
+--Ball					
+--			elsif(row >= to_integer(ball_y) and column >= to_integer(ball_x) and column <= (to_integer(ball_x) + to_integer(ball_radius)) and row <= to_integer(ball_x) + to_integer(ball_radius)) then
+--					g <= (others => '0');
+--					r <= "11111111";						
+--					b <= (others => '0');
 
 --above of AF
 			elsif(blank = '0') then
