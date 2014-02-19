@@ -39,7 +39,12 @@ I included my button logic inside of my pong control rather than creating a sepa
 Test/Debug
 ===============
 
-The hardest part about this lab for me was getting the paddle to move. I cleaned up my code by removing unnecessary signals from the sensitivity lists and adding necessary ones. This helped when compiling but the paddle still would not move. I troubleshot with trial and error and it wasn't until I changed my integers to unsigned that I was finally able to get my paddles working.
+The hardest part about this lab for me was getting the paddle to move. I cleaned up my code by removing unnecessary signals from the sensitivity lists and adding necessary ones. This helped when compiling but the paddle still would not move. I troubleshot with trial and error and it wasn't until I changed my integers to unsigned that I was finally able to get my paddles working. My next biggest struggle was trying to get the ball to consistenly bounce off the wall. I tried many different approaches and even tried people's working code with my own code and it still didn't work. It eventually came down to me changing an unrelated variable in pixel_gen for it to work.
+
+Conclusion
+==================
+
+Most of the problems I encountered in this lab didn't boil down to an a definitive "that makes sense solution" but more of a "that shouldn't even have fixed it". I learned a lot during this lab but I understand less about errors in VHDL now then I did in the beginning.
 
 
 
